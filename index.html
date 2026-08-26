@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declaris ERP — Soliq & TIF Platformasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #0ea5e9;
+            --accent2: #8b5cf6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+        /* Login */
+        #login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .login-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .login-logo { text-align: center; margin-bottom: 32px; }
+        .login-logo .logo-icon { font-size: 48px; margin-bottom: 12px; }
+        .login-logo h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-logo p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .login-form { display: flex; flex-direction: column; gap: 16px; }
+        .login-demo {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .login-demo code { color: var(--accent); font-weight: 600; }
+        /* Layout */
+        #main-screen { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header .logo-icon { font-size: 28px; }
+        .sidebar-header span {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(139,92,246,0.15));
+            color: var(--accent);
+            border: 1px solid rgba(14,165,233,0.2);
+        }
+        .nav-icon { font-size: 18px; }
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: var(--text-muted); }
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .content-header h2 { font-size: 24px; font-weight: 700; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        /* Components */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-info { background: rgba(59,130,246,0.15); color: var(--info); }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+        .btn-sm { padding: 6px 14px; font-size: 13px; }
+        .btn-full { width: 100%; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .error-msg {
+            color: var(--danger);
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .stat-icon {
+            font-size: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(14,165,233,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-info { flex: 1; }
+        .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-value { font-size: 22px; font-weight: 700; }
+        .risk-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .risk-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .risk-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        /* Panels */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .panel-header { margin-bottom: 20px; }
+        .panel-header h3 { font-size: 16px; font-weight: 600; }
+        /* Tables */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(51,65,85,0.5);
+            color: var(--text);
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        /* Alerts */
+        .alerts-list { display: flex; flex-direction: column; gap: 10px; }
+        .alert-item {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border-left: 4px solid;
+            background: rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .alert-item.high { border-left-color: var(--danger); }
+        .alert-item.medium { border-left-color: var(--warning); }
+        .alert-item.low { border-left-color: var(--success); }
+        .alert-content { flex: 1; }
+        .alert-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .alert-desc { font-size: 13px; color: var(--text-muted); }
+        .alert-actions { display: flex; gap: 8px; }
+        /* Summary */
+        .summary-cards { display: flex; flex-direction: column; gap: 12px; }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .summary-item span { color: var(--text-muted); }
+        .summary-item strong { color: var(--text); }
+        .text-danger { color: var(--danger) !important; }
+        /* Generator Result */
+        .gen-result {
+            margin-top: 24px;
+            padding: 24px;
+            background: var(--bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+        .result-label { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+        .result-box {
+            padding: 16px;
+            background: #020617;
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            word-break: break-word;
+        }
+        .result-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .result-meta span { color: var(--text); font-weight: 600; }
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Utils */
+        .hidden { display: none !important; }
+        .screen { min-height: 100vh; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: relative; height: auto; }
+            .main-content { margin-left: 0; padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .panels-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .result-meta { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <div class="login-logo">
+                    <div class="logo-icon">📊</div>
+                    <h1>DECLARIS ERP</h1>
+                    <p>O'zbekiston Soliq & TIF Platformasi</p>
+                </div>
+                <form id="login-form" class="login-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="login-username" placeholder="Username" value="admin">
+                    </div>
+                    <div class="form-group">
+                        <label>Parol</label>
+                        <input type="password" id="login-password" placeholder="Parol" value="admin123">
+                    </div>
+                    <button type="button" onclick="doLogin()" class="btn btn-primary btn-full">Kirish</button>
+                    <div id="login-error" class="error-msg"></div>
+                </form>
+                <div class="login-demo">
+                    <p>Demo: <code>admin / admin123</code></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-screen" class="screen hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-icon">📊</div>
+                    <span>DECLARIS</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" onclick="switchTab('dashboard')">
+                        <span class="nav-icon">📈</span>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('tax')">
+                        <span class="nav-icon">💰</span>
+                        <span>Soliq To'lovlari</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('transactions')">
+                        <span class="nav-icon">🌍</span>
+                        <span>Import-Eksport</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('risks')">
+                        <span class="nav-icon">⚠️</span>
+                        <span>Risk Analitika</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('customs')">
+                        <span class="nav-icon">📦</span>
+                        <span>Bojxona</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('generator')">
+                        <span class="nav-icon">📝</span>
+                        <span>To'lov Generatori</span>
+                    </button>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="user-avatar">👤</div>
+                        <div>
+                            <div id="user-name" class="user-name">Admin</div>
+                            <div class="user-role">Buxgalter</div>
+                        </div>
+                    </div>
+                    <button onclick="doLogout()" class="btn btn-secondary btn-sm">Chiqish</button>
+                </div>
+            </aside>
+
+            <!-- Content -->
+            <main class="main-content">
+                <header class="content-header">
+                    <h2 id="page-title">Dashboard</h2>
+                    <div class="header-actions">
+                        <span class="badge badge-info">🇺🇿 O'zbekiston</span>
+                        <span id="current-date"></span>
+                    </div>
+                </header>
+
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Soliq Majburiyatlari</div>
+                                <div class="stat-value" id="dash-tax">UZS 128,400,000</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📥</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Import (UZS)</div>
+                                <div class="stat-value" id="dash-import">UZS 569,250,000</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📤</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Eksport (UZS)</div>
+                                <div class="stat-value" id="dash-export">UZS 169,740,000</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Risk Indeksi</div>
+                                <div class="stat-value" id="dash-risk" style="color:var(--warning)">64/100</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>🚨 Soliq Xatarlari (Gap-Analiz)</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr><th>Kontragent</th><th>QQS Uzilish</th><th>Status</th></tr>
+                                    </thead>
+                                    <tbody id="dash-gap-body">
+                                        <tr>
+                                            <td>"Asia Textile" LLC</td>
+                                            <td>12.4%</td>
+                                            <td><span class="badge badge-warning">Nazoratda</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>"Global Import" LLC</td>
+                                            <td>8.1%</td>
+                                            <td><span class="badge badge-success">Normal</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>"Samarqand Agro"</td>
+                                            <td>23.7%</td>
+                                            <td><span class="badge badge-danger">Yuqori Risk</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>📦 Bojxona Rejimlari</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr><th>Rejim</th><th>Tovar</th><th>Muddat</th><th>Status</th></tr>
+                                    </thead>
+                                    <tbody id="dash-customs-body">
+                                        <tr>
+                                            <td>IM-70</td>
+                                            <td>Elektronika</td>
+                                            <td>5 kun</td>
+                                            <td><span class="badge badge-danger">Tugayapti</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ND-40</td>
+                                            <td>Kiyim-kechak</td>
+                                            <td>18 kun</td>
+                                            <td><span class="badge badge-warning">Diqqat</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>IM-70</td>
+                                            <td>Avto ehtiyot qismlar</td>
+                                            <td>45 kun</td>
+                                            <td><span class="badge badge-success">Normal</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>⚠️ Aktiv Ogohlantirishlar</h3>
+                        </div>
+                        <div class="alerts-list">
+                            <div class="alert-item high">
+                                <div class="alert-content">
+                                    <div class="alert-title">RISK_PENALTY: Valyuta tushumi kechikishi</div>
+                                    <div class="alert-desc">Eksport deklaratsiyasi #EX-2026-044 bo'yicha valyuta tushumi 90 kundan oshdi. Jarima xavfi!</div>
+                                </div>
+                                <span class="badge badge-danger">3 kun</span>
+                            </div>
+                            <div class="alert-item high">
+                                <div class="alert-content">
+                                    <div class="alert-title">GAP_ANALYSIS: QQS uzilishi</div>
+                                    <div class="alert-desc">Kontragent "Samarqand Agro" bilan QQS uzilishi 23.7%. Soliq tekshiruvi xavfi.</div>
+                                </div>
+                                <span class="badge badge-danger">14 kun</span>
+                            </div>
+                            <div class="alert-item medium">
+                                <div class="alert-content">
+                                    <div class="alert-title">BOJXONA_MUDDAT: Rejim tugayapti</div>
+                                    <div class="alert-desc">IM-70 rejimi bo'yicha elektronika tovarlari saqlash muddati tugayapti.</div>
+                                </div>
+                                <span class="badge badge-warning">5 kun</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax Tab -->
+                <div id="tab-tax" class="tab-content">
+                    <div class="panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>💰 Soliq To'lov Kodlari (Kod Naznacheniya)</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr><th>Kod</th><th>Soliq Nomi</th><th>G'azna Hisob-raqami</th><th>Stavka</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>101</strong></td>
+                                            <td>JSHDS (Yagona Soliq)</td>
+                                            <td style="font-family:monospace;">23402000300100001010</td>
+                                            <td>4% / 5%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>102</strong></td>
+                                            <td>Foyda Soliqi</td>
+                                            <td style="font-family:monospace;">23402000300100002010</td>
+                                            <td>15%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>103</strong></td>
+                                            <td>QQS (Qo'shilgan Qiymat Soliqi)</td>
+                                            <td style="font-family:monospace;">23402000300100003010</td>
+                                            <td>12%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>104</strong></td>
+                                            <td>Aylanma Soliq</td>
+                                            <td style="font-family:monospace;">23402000300100004010</td>
+                                            <td>4% / 25%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>105</strong></td>
+                                            <td>Bojxona Yig'imlari</td>
+                                            <td style="font-family:monospace;">23402000300100005010</td>
+                                            <td>O'zgaruvchan</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>➕ Yangi Soliq To'lovi</h3>
+                            </div>
+                            <form id="tax-payment-form" onsubmit="return false;">
+                                <div class="form-group">
+                                    <label>Soliq KODI</label>
+                                    <select id="tax-code-select" required>
+                                        <option value="101">101 - JSHDS</option>
+                                        <option value="102">102 - Foyda Soliqi</option>
+                                        <option value="103">103 - QQS 12%</option>
+                                        <option value="104">104 - Aylanma Soliq</option>
+                                        <option value="105">105 - Bojxona Yig'imlari</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Summa (UZS)</label>
+                                    <input type="number" id="tax-amount" placeholder="15000000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Davr (Oy/Yil)</label>
+                                    <input type="text" id="tax-period" placeholder="Avgust 2026" required>
+                                </div>
+                                <button type="button" onclick="saveTaxPayment()" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>📋 So'nggi Soliq To'lovlari</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tax-payments-table">
+                                <thead>
+                                    <tr><th>Kod</th><th>Summa</th><th>Davr</th><th>Maqsad</th><th>Status</th></tr>
+                                </thead>
+                                <tbody id="tax-payments-body">
+                                    <tr>
+                                        <td>101</td>
+                                        <td>UZS 45,000,000</td>
+                                        <td>Iyul 2026</td>
+                                        <td>JSHDS to'lovi</td>
+                                        <td><span class="badge badge-success">To'langan</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>103</td>
+                                        <td>UZS 128,400,000</td>
+                                        <td>Iyul 2026</td>
+                                        <td>QQS to'lovi</td>
+                                        <td><span class="badge badge-warning">Kutilmoqda</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>102</td>
+                                        <td>UZS 35,000,000</td>
+                                        <td>Iyul 2026</td>
+                                        <td>Foyda solig'i</td>
+                                        <td><span class="badge badge-warning">Kutilmoqda</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Tab -->
+                <div id="tab-transactions" class="tab-content">
+                    <div class="panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>🌍 Yangi Valyuta Operatsiyasi</h3>
+                            </div>
+                            <form id="transaction-form" onsubmit="return false;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Operatsiya Turi</label>
+                                        <select id="trans-type" required>
+                                            <option value="import">Import</option>
+                                            <option value="export">Eksport</option>
+                                            <option value="convert">Konvertatsiya</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Valyuta</label>
+                                        <select id="trans-currency" required>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="CNY">CNY (¥)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Summa</label>
+                                        <input type="number" id="trans-amount" step="0.01" placeholder="50000" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Kurs (UZS)</label>
+                                        <input type="number" id="trans-rate" step="0.01" placeholder="12650" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Bank MFO</label>
+                                        <input type="text" id="trans-mfo" placeholder="00444">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hisob-raqam</label>
+                                        <input type="text" id="trans-account" placeholder="2021...">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Kontragent</label>
+                                    <input type="text" id="trans-counterparty" placeholder="Kompaniya nomi">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tavsif</label>
+                                    <textarea id="trans-desc" rows="2"></textarea>
+                                </div>
+                                <button type="button" onclick="saveTransaction()" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>📊 Operatsiya Xulosasi</h3>
+                            </div>
+                            <div class="summary-cards">
+                                <div class="summary-item">
+                                    <span>Jami Import:</span>
+                                    <strong>$45,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Jami Eksport:</span>
+                                    <strong>€12,300</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Import (UZS):</span>
+                                    <strong>UZS 569,250,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Eksport (UZS):</span>
+                                    <strong>UZS 169,740,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>📋 So'nggi Operatsiyalar</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="transactions-table">
+                                <thead>
+                                    <tr><th>Sana</th><th>Turi</th><th>Valyuta</th><th>Summa</th><th>Kurs</th><th>UZS</th><th>Kontragent</th></tr>
+                                </thead>
+                                <tbody id="transactions-body">
+                                    <tr>
+                                        <td>09.08.2026</td>
+                                        <td><span class="badge badge-info">IMPORT</span></td>
+                                        <td>USD</td>
+                                        <td>45,000</td>
+                                        <td>12,650</td>
+                                        <td>UZS 569,250,000</td>
+                                        <td>China Electronics Ltd</td>
+                                    </tr>
+                                    <tr>
+                                        <td>07.08.2026</td>
+                                        <td><span class="badge badge-success">EXPORT</span></td>
+                                        <td>EUR</td>
+                                        <td>12,300</td>
+                                        <td>13,800</td>
+                                        <td>UZS 169,740,000</td>
+                                        <td>EuroTrade GmbH</td>
+                                    </tr>
+                                    <tr>
+                                        <td>05.08.2026</td>
+                                        <td><span class="badge badge-warning">CONVERT</span></td>
+                                        <td>USD</td>
+                                        <td>8,500</td>
+                                        <td>12,620</td>
+                                        <td>UZS 107,270,000</td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risks Tab -->
+                <div id="tab-risks" class="tab-content">
+                    <div class="stats-grid">
+                        <div class="stat-card risk-card">
+                            <div class="stat-label">Umumiy Risk</div>
+                            <div class="stat-value" style="color:var(--warning)">64/100</div>
+                            <div class="risk-bar"><div class="risk-fill" style="width:64%; background:var(--warning)"></div></div>
+                        </div>
+                        <div class="stat-card risk-card">
+                            <div class="stat-label">QQS Riski</div>
+                            <div class="stat-value" style="color:var(--danger)">78/100</div>
+                            <div class="risk-bar"><div class="risk-fill" style="width:78%; background:var(--danger)"></div></div>
+                        </div>
+                        <div class="stat-card risk-card">
+                            <div class="stat-label">Valyuta Riski</div>
+                            <div class="stat-value" style="color:var(--warning)">45/100</div>
+                            <div class="risk-bar"><div class="risk-fill" style="width:45%; background:var(--warning)"></div></div>
+                        </div>
+                        <div class="stat-card risk-card">
+                            <div class="stat-label">Bojxona Riski</div>
+                            <div class="stat-value" style="color:var(--success)">22/100</div>
+                            <div class="risk-bar"><div class="risk-fill" style="width:22%; background:var(--success)"></div></div>
+                        </div>
+                    </div>
+                    <div class="panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>📊 QQS Gap-Analiz</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr><th>Kontragent</th><th>INN</th><th>Uzilish %</th><th>Jiddiyat</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>"Samarqand Agro"</td>
+                                            <td>765432109</td>
+                                            <td>23.7%</td>
+                                            <td><span class="badge badge-danger">Yuqori</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>"Asia Textile" LLC</td>
+                                            <td>987654321</td>
+                                            <td>12.4%</td>
+                                            <td><span class="badge badge-warning">O'rta</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>"Global Import" LLC</td>
+                                            <td>876543210</td>
+                                            <td>8.1%</td>
+                                            <td><span class="badge badge-success">Past</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>🚨 Aktiv Ogohlantirishlar</h3>
+                            </div>
+                            <div class="alerts-list">
+                                <div class="alert-item high">
+                                    <div class="alert-content">
+                                        <div class="alert-title">RISK_PENALTY</div>
+                                        <div class="alert-desc">Eksport deklaratsiyasi #EX-2026-044 bo'yicha valyuta tushumi 90 kundan oshdi. Jarima xavfi!</div>
+                                    </div>
+                                    <span class="badge badge-danger">Yuqori</span>
+                                </div>
+                                <div class="alert-item high">
+                                    <div class="alert-content">
+                                        <div class="alert-title">GAP_ANALYSIS</div>
+                                        <div class="alert-desc">Kontragent "Samarqand Agro" bilan QQS uzilishi 23.7%. Soliq tekshiruvi xavfi.</div>
+                                    </div>
+                                    <span class="badge badge-danger">Yuqori</span>
+                                </div>
+                                <div class="alert-item medium">
+                                    <div class="alert-content">
+                                        <div class="alert-title">BOJXONA_MUDDAT</div>
+                                        <div class="alert-desc">IM-70 rejimi bo'yicha elektronika tovarlari saqlash muddati tugayapti.</div>
+                                    </div>
+                                    <span class="badge badge-warning">O'rta</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customs Tab -->
+                <div id="tab-customs" class="tab-content">
+                    <div class="panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>📦 Yangi Bojxona Deklaratsiyasi</h3>
+                            </div>
+                            <form id="customs-form" onsubmit="return false;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Deklaratsiya №</label>
+                                        <input type="text" id="customs-number" placeholder="EX-2026-001" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rejim</label>
+                                        <select id="customs-regime" required>
+                                            <option value="IM-70">IM-70 (Import)</option>
+                                            <option value="ND-40">ND-40 (Vaqtinchalik)</option>
+                                            <option value="EK-40">EK-40 (Eksport)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tovar Tavsifi</label>
+                                    <textarea id="customs-goods" rows="2" placeholder="Elektronika, kiyim-kechak..."></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Summa (USD)</label>
+                                        <input type="number" id="customs-amount" step="0.01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Kirish Sanasi</label>
+                                        <input type="date" id="customs-entry" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tugash Sanasi</label>
+                                    <input type="date" id="customs-expiry" required>
+                                </div>
+                                <button type="button" onclick="saveCustoms()" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>⏰ Muddatlar Xulosasi</h3>
+                            </div>
+                            <div class="summary-cards">
+                                <div class="summary-item">
+                                    <span>Faol deklaratsiyalar:</span>
+                                    <strong>3</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Favqulodda:</span>
+                                    <strong class="text-danger">1</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>📋 Bojxona Deklaratsiyalari</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr><th>№</th><th>Rejim</th><th>Tovar</th><th>Summa</th><th>Kirish</th><th>Tugash</th><th>Qolgan kun</th><th>Status</th></tr>
+                                </thead>
+                                <tbody id="customs-body">
+                                    <tr>
+                                        <td>CD-2026-001</td>
+                                        <td>IM-70</td>
+                                        <td>Elektronika</td>
+                                        <td>$45,000</td>
+                                        <td>15.05.2026</td>
+                                        <td>14.08.2026</td>
+                                        <td>5 kun</td>
+                                        <td><span class="badge badge-danger">Tugayapti</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CD-2026-002</td>
+                                        <td>ND-40</td>
+                                        <td>Kiyim-kechak</td>
+                                        <td>$12,000</td>
+                                        <td>22.06.2026</td>
+                                        <td>28.08.2026</td>
+                                        <td>18 kun</td>
+                                        <td><span class="badge badge-warning">Diqqat</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CD-2026-003</td>
+                                        <td>IM-70</td>
+                                        <td>Avto ehtiyot qismlar</td>
+                                        <td>$28,000</td>
+                                        <td>05.08.2026</td>
+                                        <td>19.09.2026</td>
+                                        <td>45 kun</td>
+                                        <td><span class="badge badge-success">Normal</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generator Tab -->
+                <div id="tab-generator" class="tab-content">
+                    <div class="panel" style="max-width: 800px;">
+                        <div class="panel-header">
+                            <h3>📝 Avtomatik To'lov Topshiriqnomasi Generatori</h3>
+                        </div>
+                        <form id="generator-form" onsubmit="return false;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Soliq KODI</label>
+                                    <select id="gen-tax-code" required>
+                                        <option value="101">101 - JSHDS</option>
+                                        <option value="102">102 - Foyda Soliqi</option>
+                                        <option value="103">103 - QQS 12%</option>
+                                        <option value="104">104 - Aylanma Soliq</option>
+                                        <option value="105">105 - Bojxona Yig'imlari</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>To'lov Summasi (UZS)</label>
+                                    <input type="number" id="gen-amount" placeholder="15000000" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Kompaniya INN</label>
+                                    <input type="text" id="gen-inn" placeholder="123456789" maxlength="9" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Davr (Oy/Yil)</label>
+                                    <input type="text" id="gen-period" placeholder="Avgust 2026" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Kompaniya Nomi (ixtiyoriy)</label>
+                                <input type="text" id="gen-company" placeholder="OOO Example">
+                            </div>
+                            <button type="button" onclick="generatePayment()" class="btn btn-primary">Generatsiya qilish</button>
+                        </form>
+
+                        <div id="gen-result" class="gen-result hidden">
+                            <div class="result-label">Avtomatik yaratilgan to'lov maqsadi:</div>
+                            <div class="result-box" id="gen-purpose"></div>
+                            <div class="result-meta">
+                                <div><strong>G'azna hisob-raqami:</strong> <span id="gen-treasury"></span></div>
+                                <div><strong>Soliq nomi:</strong> <span id="gen-taxname"></span></div>
+                                <div><strong>Summa:</strong> <span id="gen-amount-display"></span></div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Nusxa olish</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // ===================== CONFIG =====================
+        const API_BASE = 'http://localhost:8000';
+
+        // ===================== UTILS =====================
+        function $(id) { return document.getElementById(id); }
+        function formatMoney(amount) {
+            return 'UZS ' + Number(amount).toLocaleString('uz-UZ');
+        }
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('uz-UZ');
+        }
+        function showToast(msg) {
+            const toast = $('toast');
+            $('toast-message').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+        function showError(elId, msg) {
+            const el = $(elId);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideError(elId) {
+            $(elId).style.display = 'none';
+        }
+
+        // ===================== AUTH =====================
+        function doLogin() {
+            const username = $('login-username').value;
+            const password = $('login-password').value;
+            hideError('login-error');
+
+            if (username === 'admin' && password === 'admin123') {
+                $('login-screen').classList.add('hidden');
+                $('main-screen').classList.remove('hidden');
+                $('current-date').textContent = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                showToast('✅ Xush kelibsiz, Admin!');
+            } else {
+                showError('login-error', 'Noto\'g\'ri username yoki parol');
+            }
+        }
+
+        function doLogout() {
+            $('main-screen').classList.add('hidden');
+            $('login-screen').classList.remove('hidden');
+            $('login-username').value = '';
+            $('login-password').value = '';
+            showToast('👋 Tizimdan chiqildi');
+        }
+
+        // ===================== NAVIGATION =====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            const tab = $('tab-' + tabName);
+            if (tab) tab.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if (el.getAttribute('onclick').includes(tabName)) el.classList.add('active');
+            });
+
+            const titles = {
+                dashboard: 'Dashboard',
+                tax: 'Soliq To\'lovlari',
+                transactions: 'Import-Eksport',
+                risks: 'Risk Analitika',
+                customs: 'Bojxona Deklaratsiyalari',
+                generator: 'To\'lov Generatori'
+            };
+            $('page-title').textContent = titles[tabName] || 'Dashboard';
+        }
+
+        // ===================== TAX PAYMENTS =====================
+        function saveTaxPayment() {
+            const code = $('tax-code-select').value;
+            const amount = $('tax-amount').value;
+            const period = $('tax-period').value;
+
+            if (!amount || !period) {
+                showToast('❌ Barcha maydonlarni to\'ldiring');
+                return;
+            }
+
+            const tbody = $('tax-payments-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${code}</td>
+                <td>${formatMoney(amount)}</td>
+                <td>${period}</td>
+                <td>${code} bo'yicha to'lov</td>
+                <td><span class="badge badge-warning">Kutilmoqda</span></td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            $('tax-payment-form').reset();
+            showToast('✅ Soliq to\'lovi saqlandi');
+        }
+
+        // ===================== TRANSACTIONS =====================
+        function saveTransaction() {
+            const type = $('trans-type').value;
+            const currency = $('trans-currency').value;
+            const amount = parseFloat($('trans-amount').value);
+            const rate = parseFloat($('trans-rate').value);
+            const counterparty = $('trans-counterparty').value || '-';
+
+            if (!amount || !rate) {
+                showToast('❌ Summa va kursni kiriting');
+                return;
+            }
+
+            const uzs = amount * rate;
+            const today = new Date().toLocaleDateString('uz-UZ');
+            const typeBadges = {
+                import: '<span class="badge badge-info">IMPORT</span>',
+                export: '<span class="badge badge-success">EXPORT</span>',
+                convert: '<span class="badge badge-warning">CONVERT</span>'
+            };
+
+            const tbody = $('transactions-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${today}</td>
+                <td>${typeBadges[type]}</td>
+                <td>${currency}</td>
+                <td>${amount.toLocaleString('uz-UZ')}</td>
+                <td>${rate.toLocaleString('uz-UZ')}</td>
+                <td>${formatMoney(uzs)}</td>
+                <td>${counterparty}</td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            $('transaction-form').reset();
+            showToast('✅ Operatsiya saqlandi');
+        }
+
+        // ===================== CUSTOMS =====================
+        function saveCustoms() {
+            const number = $('customs-number').value;
+            const regime = $('customs-regime').value;
+            const goods = $('customs-goods').value || '-';
+            const amount = $('customs-amount').value || '0';
+            const entry = $('customs-entry').value;
+            const expiry = $('customs-expiry').value;
+
+            if (!number || !entry || !expiry) {
+                showToast('❌ Majburiy maydonlarni to\'ldiring');
+                return;
+            }
+
+            const entryDate = new Date(entry);
+            const expiryDate = new Date(expiry);
+            const today = new Date();
+            const daysRemaining = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+            let statusBadge = '<span class="badge badge-success">Normal</span>';
+            if (daysRemaining <= 7) statusBadge = '<span class="badge badge-danger">Tugayapti</span>';
+            else if (daysRemaining <= 14) statusBadge = '<span class="badge badge-warning">Diqqat</span>';
+
+            const tbody = $('customs-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${number}</td>
+                <td>${regime}</td>
+                <td>${goods}</td>
+                <td>$${Number(amount).toLocaleString('uz-UZ')}</td>
+                <td>${formatDate(entry)}</td>
+                <td>${formatDate(expiry)}</td>
+                <td>${daysRemaining} kun</td>
+                <td>${statusBadge}</td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            $('customs-form').reset();
+            showToast('✅ Deklaratsiya saqlandi');
+        }
+
+        // ===================== GENERATOR =====================
+        const TREASURY_ACCOUNTS = {
+            '101': '23402000300100001010',
+            '102': '23402000300100002010',
+            '103': '23402000300100003010',
+            '104': '23402000300100004010',
+            '105': '23402000300100005010'
+        };
+        const TAX_NAMES = {
+            '101': 'JSHDS (Yagona Soliq)',
+            '102': 'Foyda Soliqi',
+            '103': 'QQS (12%)',
+            '104': 'Aylanmadan olinadigan soliq',
+            '105': 'Bojxona yig\'imlari'
+        };
+
+        function generatePayment() {
+            const code = $('gen-tax-code').value;
+            const amount = parseFloat($('gen-amount').value);
+            const inn = $('gen-inn').value;
+            const period = $('gen-period').value;
+            const company = $('gen-company').value;
+
+            if (!amount || !inn || !period) {
+                showToast('❌ Barcha maydonlarni to\'ldiring');
+                return;
+            }
+
+            const purpose = `Soliq to'lovi: ${TAX_NAMES[code]} bo'yicha ${period} davri uchun. INN: ${inn}. KOD: ${code}. Summa: ${amount.toLocaleString('uz-UZ')} so'm. Majburiyatni bajarish maqsadida.`;
+
+            $('gen-purpose').textContent = purpose;
+            $('gen-treasury').textContent = TREASURY_ACCOUNTS[code];
+            $('gen-taxname').textContent = TAX_NAMES[code];
+            $('gen-amount-display').textContent = formatMoney(amount);
+            $('gen-result').classList.remove('hidden');
+
+            showToast('✅ To\'lov maqsadi yaratildi');
+        }
+
+        function copyToClipboard() {
+            const text = $('gen-purpose').textContent;
+            navigator.clipboard.writeText(text).then(() => showToast('✅ Nusxa olindi'));
+        }
+
+        // ===================== INIT =====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enter key support for login
+            $('login-password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') doLogin();
+            });
+        });
+    </script>
+</body>
+</html>
