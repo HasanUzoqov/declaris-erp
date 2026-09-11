@@ -2,18 +2,24 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 class UserBase(BaseModel):
-    username: str
+    username: Optional[str] = None
+    phone: str
 
 class UserCreate(UserBase):
     password: str
+    full_name: Optional[str] = None
+    company_id: Optional[int] = None
 
 class UserLogin(BaseModel):
-    username: str
+    phone: str
     password: str
 
 class UserResponse(UserBase):
     id: int
+    full_name: Optional[str] = None
     role: str
+    company_id: Optional[int] = None
+    is_active: bool
 
     class Config:
         from_attributes = True
