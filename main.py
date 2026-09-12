@@ -28,30 +28,29 @@ app.add_middleware(
 )
 
 # ===================== AUTH ENDPOINTS =====================
-
 @app.post("/auth/register", response_model=schemas.TokenResponse)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     """Ro'yxatdan o'tish"""
-    # Telefon allaqachon mavjudmi?
     db_user = db.query(models.User).filter(models.User.phone == user_data.phone).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Bu telefon raqam allaqachon ro'yxatdan o'tgan")
     
-    # Username allaqachon mavjudmi?
-    if user_data.phone:
-        db_username = db.query(models.User).filter(models.User.username == user_data.phone).first()
-        if db_username:
-            raise HTTPException(status_code=400, detail="Bu username allaqachon mavjud")
-    
     hashed_pw = auth.get_password_hash(user_data.password)
     
+    # company_id mavjudligini tekshirish (agar yuborilgan bo'lsa)
+    company_id = user_data.company_id
+    if company_id:
+        company_exists = db.query(models.Company).filter(models.Company.id == company_id).first()
+        if not company_exists:
+            company_id = None  # Bazada mavjud bo'lmasa, None qilib belgilaymiz
+
     db_user = models.User(
         username=user_data.phone,
         phone=user_data.phone,
         full_name=user_data.full_name,
         hashed_password=hashed_pw,
-        role=models.UserRole.ACCOUNTANT,
-        company_id=user_data.company_id
+        role=models.UserRole.ACCOUNTANT if hasattr(models, "UserRole") else "ACCOUNTANT",
+        company_id=company_id
     )
     db.add(db_user)
     db.commit()
@@ -62,28 +61,6 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         "token": token,
         "message": f"Xush kelibsiz, {db_user.full_name or db_user.phone}!"
     }
-
-
-@app.post("/auth/login", response_model=schemas.TokenResponse)
-def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    """Kirish"""
-    user = auth.authenticate_user(db, credentials.phone, credentials.password)
-    if not user:
-        raise HTTPException(status_code=400, detail="Noto'g'ri telefon yoki parol")
-    
-    token = auth.create_access_token(data={"sub": str(user.id)})
-    return {
-        "token": token,
-        "message": f"Xush kelibsiz, {user.full_name or user.phone}!"
-    }
-
-
-@app.get("/auth/me", response_model=schemas.UserResponse)
-def get_me(current_user: models.User = Depends(auth.get_current_active_user)):
-    """Joriy foydalanuvchi ma'lumotlari"""
-    return current_user
-
-
 # ===================== COMPANY ENDPOINTS =====================
 
 @app.get("/companies", response_model=list[schemas.CompanyResponse])
