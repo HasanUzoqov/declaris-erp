@@ -34,3 +34,11 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+
+class CompanyResponse(BaseModel):
+    id: int
+    name: str
+    tax_id: Optional[str] = None
+
+    class Config:
+        from_attributes = True
