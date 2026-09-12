@@ -3,7 +3,7 @@ from typing import Optional, List
 
 class UserBase(BaseModel):
     username: Optional[str] = None
-    phone: str
+    phone: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -11,7 +11,8 @@ class UserCreate(UserBase):
     company_id: Optional[int] = None
 
 class UserLogin(BaseModel):
-    phone: str
+    phone: Optional[str] = None
+    username: Optional[str] = None
     password: str
 
 class UserResponse(UserBase):
@@ -19,7 +20,7 @@ class UserResponse(UserBase):
     full_name: Optional[str] = None
     role: str
     company_id: Optional[int] = None
-    is_active: bool
+    is_active: bool = True
 
     class Config:
         from_attributes = True
