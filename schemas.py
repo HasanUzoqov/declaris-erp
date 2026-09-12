@@ -35,10 +35,15 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
 
-class CompanyResponse(BaseModel):
-    id: int
+class CompanyBase(BaseModel):
     name: str
     tax_id: Optional[str] = None
+
+class CompanyCreate(CompanyBase):
+    pass
+
+class CompanyResponse(CompanyBase):
+    id: int
 
     class Config:
         from_attributes = True
