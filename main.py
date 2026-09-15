@@ -31,35 +31,36 @@ app.add_middleware(
 @app.post("/auth/register", response_model=schemas.TokenResponse)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     """Ro'yxatdan o'tish"""
+    # Mavjud foydalanuvchini tekshirish
     db_user = db.query(models.User).filter(models.User.phone == user_data.phone).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Bu telefon raqam allaqachon ro'yxatdan o'tgan")
     
+    # Parolni xeshlovchi xavfsiz funksiya
     hashed_pw = auth.get_password_hash(user_data.password)
     
-    # company_id mavjudligini tekshirish (agar yuborilgan bo'lsa)
-    company_id = user_data.company_id
-    if company_id:
-        company_exists = db.query(models.Company).filter(models.Company.id == company_id).first()
-        if not company_exists:
-            company_id = None  # Bazada mavjud bo'lmasa, None qilib belgilaymiz
-
-    db_user = models.User(
-        username=user_data.phone,
+    # User obyektini xatosiz yaratish
+    new_user = models.User(
+        username=user_data.phone,  # username bo'sh qolmasligi uchun phone beriladi
         phone=user_data.phone,
-        full_name=user_data.full_name,
+        full_name=user_data.full_name or "Foydalanuvchi",
         hashed_password=hashed_pw,
-        role=models.UserRole.ACCOUNTANT if hasattr(models, "UserRole") else "ACCOUNTANT",
-        company_id=company_id
+        role="ACCOUNTANT",
+        company_id=None
     )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
     
-    token = auth.create_access_token(data={"sub": str(db_user.id)})
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Baza xatoligi: {str(e)}")
+    
+    token = auth.create_access_token(data={"sub": str(new_user.id)})
     return {
         "token": token,
-        "message": f"Xush kelibsiz, {db_user.full_name or db_user.phone}!"
+        "message": f"Xush kelibsiz, {new_user.full_name}!"
     }
 # ===================== COMPANY ENDPOINTS =====================
 
