@@ -30,38 +30,51 @@ app.add_middleware(
 # ===================== AUTH ENDPOINTS =====================
 @app.post("/auth/register", response_model=schemas.TokenResponse)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
-    """Ro'yxatdan o'tish"""
-    # Mavjud foydalanuvchini tekshirish
-    db_user = db.query(models.User).filter(models.User.phone == user_data.phone).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Bu telefon raqam allaqachon ro'yxatdan o'tgan")
-    
-    # Parolni xeshlovchi xavfsiz funksiya
-    hashed_pw = auth.get_password_hash(user_data.password)
-    
-    # User obyektini xatosiz yaratish
-    new_user = models.User(
-        username=user_data.phone,  # username bo'sh qolmasligi uchun phone beriladi
-        phone=user_data.phone,
-        full_name=user_data.full_name or "Foydalanuvchi",
-        hashed_password=hashed_pw,
-        role="ACCOUNTANT",
-        company_id=None
-    )
-    
+    """Foydalanuvchini ro'yxatdan o'tkazish"""
     try:
+        # 1. Telefon raqam mavjudligini tekshirish
+        db_user = db.query(models.User).filter(models.User.phone == user_data.phone).first()
+        if db_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Bu telefon raqam allaqachon ro'yxatdan o'tgan"
+            )
+        
+        # 2. Parolni xeshlashtirish
+        hashed_pw = auth.get_password_hash(user_data.password)
+        
+        # 3. company_id tekshiruvi (agar 0 bo'lsa, None ga o'zgartirish)
+        target_company_id = user_data.company_id if user_data.company_id and user_data.company_id > 0 else None
+
+        # 4. Foydalanuvchi obyektini yaratish
+        new_user = models.User(
+            username=user_data.phone,
+            phone=user_data.phone,
+            full_name=user_data.full_name or "Foydalanuvchi",
+            hashed_password=hashed_pw,
+            role="ACCOUNTANT",
+            company_id=target_company_id
+        )
+        
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
+        
+        # 5. Token yaratish
+        token = auth.create_access_token(data={"sub": str(new_user.id)})
+        return {
+            "token": token,
+            "message": f"Xush kelibsiz, {new_user.full_name}!"
+        }
+    except HTTPException as http_ex:
+        db.rollback()
+        raise http_ex
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Baza xatoligi: {str(e)}")
-    
-    token = auth.create_access_token(data={"sub": str(new_user.id)})
-    return {
-        "token": token,
-        "message": f"Xush kelibsiz, {new_user.full_name}!"
-    }
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ro'yxatdan o'tishda xatolik [{type(e).__name__}]: {str(e)}"
+        )
 # ===================== COMPANY ENDPOINTS =====================
 
 @app.get("/companies", response_model=list[schemas.CompanyResponse])
